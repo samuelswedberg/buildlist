@@ -39,6 +39,51 @@ namespace buildlist.Controllers
             return new JsonResult(table);
         }
 
+        [HttpGet]
+        [Route("GetMaintenanceList")]
+        public JsonResult GetMaintenanceList()
+        {
+            string query = "select * from dbo.maintenancelist";
+            DataTable table = new DataTable();
+            string sqlDatasource = _configuration.GetConnectionString("buildlistDBcon");
+            SqlDataReader myReader;
+            using (SqlConnection myCon = new SqlConnection(sqlDatasource))
+            {
+                myCon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, myCon))
+                {
+                    myReader = myCommand.ExecuteReader();
+                    table.Load(myReader);
+                    myReader.Close();
+                    myCon.Close();
+                }
+            }
+
+            return new JsonResult(table);
+        }
+
+        [HttpGet]
+        [Route("GetWarrantyList")]
+        public JsonResult GetWarrantyList()
+        {
+            string query = "select * from dbo.warrantylist";
+            DataTable table = new DataTable();
+            string sqlDatasource = _configuration.GetConnectionString("buildlistDBcon");
+            SqlDataReader myReader;
+            using (SqlConnection myCon = new SqlConnection(sqlDatasource))
+            {
+                myCon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, myCon))
+                {
+                    myReader = myCommand.ExecuteReader();
+                    table.Load(myReader);
+                    myReader.Close();
+                    myCon.Close();
+                }
+            }
+
+            return new JsonResult(table);
+        }
         [HttpPost]
         [Route("AddSku")]
         public IActionResult AddSkus([FromForm] long newSku)
@@ -47,7 +92,6 @@ namespace buildlist.Controllers
             //string query = "insert into dbo.BuildList (sku, quantity, priority) values(@newSku, 1, 1)";
             string sqlDatasource = _configuration.GetConnectionString("buildlistDBcon");
             DataTable table = new DataTable();
-            SqlDataReader myReader;
             try
             {
                 using (SqlConnection myCon = new SqlConnection(sqlDatasource))
@@ -58,17 +102,16 @@ namespace buildlist.Controllers
                         myCommand.Parameters.AddWithValue("@newSku", newSku);
                         int rowsAffected = myCommand.ExecuteNonQuery();
                         if (rowsAffected > 0) { return Ok(); }
-                        else { return NotFound(new { error = "SKU not found in skulist" }); }
-                        myReader = myCommand.ExecuteReader();
-                        table.Load(myReader);
-                        myReader.Close();
-                        myCon.Close();
+                        else
+                        {
+                            return NotFound(new { error = "SKU not found in skulist" });
+                        }
                     }
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                return BadRequest(new { error = $"Error: {ex.Message}" });
+                return BadRequest(new { error = $"Invalid Sku. (Error: {ex.Message})" });
             }
         }
 
